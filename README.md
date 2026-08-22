@@ -91,7 +91,7 @@ production-rag-kubernetes/
 ├── pyproject.toml
 ├── README.md
 └── uv.lock
-
+```
 
 ### Day 2 — RAG Citations
 
