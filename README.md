@@ -113,3 +113,19 @@ an application running on a cluster...
 Sources:
 - Tutorials.pdf — Page 9
 - Concepts.pdf — Page 5
+
+
+### Day 3 — RAG Evaluation
+
+- [x] Created RAG evaluation prompt
+- [x] Evaluated Faithfulness
+- [x] Evaluated Answer Relevance
+- [x] Evaluated Context Relevance
+- [x] Tested 5 Kubernetes queries
+- [x] Calculated average evaluation scores
+
+| Metric | Average Score |
+|---|---:|
+| Faithfulness | 1.00 |
+| Answer Relevance | 1.00 |
+| Context Relevance | 1.00 |
