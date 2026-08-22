@@ -91,3 +91,25 @@ production-rag-kubernetes/
 ├── pyproject.toml
 ├── README.md
 └── uv.lock
+
+
+### Day 2 — RAG Citations
+
+- [x] Added source metadata to retrieved context
+- [x] Added PDF filename and page number
+- [x] Added programmatic source extraction
+- [x] Prevented duplicate sources
+- [x] Tested citation output
+
+Example:
+
+Question:
+What is a Kubernetes Deployment?
+
+Answer:
+A Kubernetes Deployment is a Kubernetes object that represents
+an application running on a cluster...
+
+Sources:
+- Tutorials.pdf — Page 9
+- Concepts.pdf — Page 5
