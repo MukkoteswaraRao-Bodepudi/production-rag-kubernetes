@@ -141,3 +141,210 @@ Sources:
 - [x] Tested multiple Kubernetes queries
 - [x] Verified traces for Deployment, Pod, Service, ReplicaSet, and ConfigMap
 - [x] Inspected RAG execution in LangSmith
+
+
+
+### Day 5 — BM25 Retrieval
+
+- [x] Implemented BM25 lexical retrieval
+- [x] Used existing document chunks for BM25 indexing
+- [x] Tested exact keyword/lexical matching
+- [x] Compared BM25 retrieval with vector retrieval
+- [x] Evaluated BM25 retrieval using Recall@5
+- [x] Evaluated BM25 retrieval using Precision@5
+- [x] Evaluated BM25 retrieval using MRR
+
+BM25 provides lexical/keyword-based retrieval and complements
+semantic vector retrieval.
+
+---
+
+### Day 5 — Hybrid Search
+
+Hybrid Search combines semantic vector retrieval with BM25 lexical retrieval.
+
+#### Hybrid Search Architecture
+
+Query
+        ↓
+┌───────────────────────┐
+│                       │
+↓                       ↓
+Vector Search        BM25 Search
+Semantic Search      Keyword Search
+│                       │
+└───────────┬───────────┘
+            ↓
+      Hybrid Ranking
+      Vector: 0.8
+      BM25: 0.2
+            ↓
+        Top-K Chunks
+            ↓
+          Context
+            ↓
+           LLM
+            ↓
+    Answer + Citations
+
+#### Hybrid Search Configuration
+
+- Vector Search Weight: 0.8
+- BM25 Weight: 0.2
+
+#### Hybrid Retrieval Evaluation
+
+| Query | Recall@5 | Precision@5 | MRR |
+|---|---:|---:|---:|
+| Deployment | 1.00 | 0.40 | 0.50 |
+| Pod | 1.00 | 0.20 | 1.00 |
+| Service | 1.00 | 0.40 | 1.00 |
+| ReplicaSet | 1.00 | 0.60 | 1.00 |
+| ConfigMap | 1.00 | 0.60 | 1.00 |
+| **Average** | **1.00** | **0.44** | **0.90** |
+
+#### Final Response Verification
+
+Retrieval metrics were not used as the only evaluation criteria.
+
+The final RAG responses were manually verified for:
+
+- [x] Answer correctness
+- [x] Retrieved context support
+- [x] Source correctness
+- [x] Page-number correctness
+- [x] Citation relevance
+- [x] Unsupported claims
+
+The five test queries produced relevant final answers with verified source citations.
+
+---
+
+## Current Retrieval Pipeline
+
+The current pipeline combines semantic and lexical retrieval:
+
+Query
+    ↓
+Vector Search
+    +
+BM25 Search
+    ↓
+Hybrid Search
+    ↓
+Top-K Relevant Chunks
+    ↓
+Context Construction
+    ↓
+LLM
+    ↓
+Final Answer
+    ↓
+Sources / Citations
+
+---
+
+## Evaluation Methodology
+
+The same five Kubernetes queries are used to evaluate the retrieval pipeline:
+
+1. What is a Kubernetes Deployment?
+2. What is a Kubernetes Pod?
+3. What is a Kubernetes Service?
+4. What is a ReplicaSet?
+5. What is a ConfigMap?
+
+### Retrieval Metrics
+
+**Recall@5**
+
+Measures whether the relevant pages are retrieved within the top 5 results.
+
+**Precision@5**
+
+Measures how many of the retrieved top-5 results are relevant.
+
+**MRR**
+
+Mean Reciprocal Rank measures the position of the first relevant result in the retrieved ranking.
+
+### Final RAG Verification
+
+Metrics are supplemented with final-answer verification.
+
+For each test case:
+
+Query
+    ↓
+Relevant Pages
+    ↓
+Retrieved Pages
+    ↓
+Retrieved Context
+    ↓
+Generated Answer
+    ↓
+Source / Citation Verification
+
+---
+
+## Upcoming Stages
+
+### Day 6 — Reranking
+
+- [ ] Introduce reranking
+- [ ] Retrieve a larger candidate set
+- [ ] Apply reranker
+- [ ] Select top relevant chunks
+- [ ] Evaluate Recall@5
+- [ ] Evaluate Precision@5
+- [ ] Evaluate MRR
+- [ ] Verify final answers
+- [ ] Verify citations
+- [ ] Compare reranking with Hybrid Search
+
+### Planned Reranking Architecture
+
+Query
+    ↓
+Hybrid Retrieval
+    ↓
+Top 10–20 Candidates
+    ↓
+Reranker
+    ↓
+Top 5 Chunks
+    ↓
+Context
+    ↓
+LLM
+    ↓
+Answer + Citations
+
+---
+
+## Future Production RAG Stages
+
+RAG Baseline
+    ↓
+Citations
+    ↓
+RAG Evaluation
+    ↓
+LangSmith
+    ↓
+BM25
+    ↓
+Hybrid Search
+    ↓
+Reranking
+    ↓
+Query Optimization
+    ↓
+Advanced Retrieval
+    ↓
+Production Evaluation
+    ↓
+Production RAG
+
+> Each new retrieval technique will be evaluated using the same test cases. Retrieval metrics will be combined with final-answer and citation verification before deciding whether the technique improves the system.
