@@ -165,7 +165,7 @@ Hybrid Search combines semantic vector retrieval with BM25 lexical retrieval.
 
 #### Hybrid Search Architecture
 
-Query
+        Query
         ↓
 ┌───────────────────────┐
 │                       │
@@ -268,83 +268,3 @@ Measures how many of the retrieved top-5 results are relevant.
 
 Mean Reciprocal Rank measures the position of the first relevant result in the retrieved ranking.
 
-### Final RAG Verification
-
-Metrics are supplemented with final-answer verification.
-
-For each test case:
-
-Query
-    ↓
-Relevant Pages
-    ↓
-Retrieved Pages
-    ↓
-Retrieved Context
-    ↓
-Generated Answer
-    ↓
-Source / Citation Verification
-
----
-
-## Upcoming Stages
-
-### Day 6 — Reranking
-
-- [ ] Introduce reranking
-- [ ] Retrieve a larger candidate set
-- [ ] Apply reranker
-- [ ] Select top relevant chunks
-- [ ] Evaluate Recall@5
-- [ ] Evaluate Precision@5
-- [ ] Evaluate MRR
-- [ ] Verify final answers
-- [ ] Verify citations
-- [ ] Compare reranking with Hybrid Search
-
-### Planned Reranking Architecture
-
-Query
-    ↓
-Hybrid Retrieval
-    ↓
-Top 10–20 Candidates
-    ↓
-Reranker
-    ↓
-Top 5 Chunks
-    ↓
-Context
-    ↓
-LLM
-    ↓
-Answer + Citations
-
----
-
-## Future Production RAG Stages
-
-RAG Baseline
-    ↓
-Citations
-    ↓
-RAG Evaluation
-    ↓
-LangSmith
-    ↓
-BM25
-    ↓
-Hybrid Search
-    ↓
-Reranking
-    ↓
-Query Optimization
-    ↓
-Advanced Retrieval
-    ↓
-Production Evaluation
-    ↓
-Production RAG
-
-> Each new retrieval technique will be evaluated using the same test cases. Retrieval metrics will be combined with final-answer and citation verification before deciding whether the technique improves the system.
