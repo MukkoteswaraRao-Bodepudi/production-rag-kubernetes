@@ -163,29 +163,23 @@ semantic vector retrieval.
 
 Hybrid Search combines semantic vector retrieval with BM25 lexical retrieval.
 
+
 #### Hybrid Search Architecture
 
-        Query
-        ↓
-┌───────────────────────┐
-│                       │
-↓                       ↓
-Vector Search        BM25 Search
-Semantic Search      Keyword Search
-│                       │
-└───────────┬───────────┘
-            ↓
-      Hybrid Ranking
-      Vector: 0.8
-      BM25: 0.2
-            ↓
-        Top-K Chunks
-            ↓
-          Context
-            ↓
-           LLM
-            ↓
-    Answer + Citations
+    A[User Query] --> B[Vector Search]
+    A --> C[BM25 Search]
+
+    B --> D[Semantic Results]
+    C --> E[Keyword Results]
+
+    D --> F[Hybrid Ranking]
+    E --> F
+
+    F --> G[Vector Weight: 0.8<br/>BM25 Weight: 0.2]
+    G --> H[Top-K Chunks]
+    H --> I[Context]
+    I --> J[LLM]
+    J --> K[Answer + Citations]
 
 #### Hybrid Search Configuration
 
