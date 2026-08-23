@@ -129,3 +129,15 @@ Sources:
 | Faithfulness | 1.00 |
 | Answer Relevance | 1.00 |
 | Context Relevance | 1.00 |
+
+
+### Day 4 — LangSmith
+
+- [x] Configured LangSmith tracing
+- [x] Connected LangSmith to the existing RAG pipeline
+- [x] Traced RAG execution
+- [x] Traced document retrieval
+- [x] Traced LLM execution
+- [x] Tested multiple Kubernetes queries
+- [x] Verified traces for Deployment, Pod, Service, ReplicaSet, and ConfigMap
+- [x] Inspected RAG execution in LangSmith
