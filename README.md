@@ -166,20 +166,50 @@ Hybrid Search combines semantic vector retrieval with BM25 lexical retrieval.
 
 #### Hybrid Search Architecture
 
-    A[User Query] --> B[Vector Search]
-    A --> C[BM25 Search]
+```text
+                         ┌───────────────┐
+                         │  User Query   │
+                         └───────┬───────┘
+                                 │
+                    ┌────────────┴────────────┐
+                    │                         │
+                    ▼                         ▼
+           ┌────────────────┐        ┌────────────────┐
+           │ Vector Search  │        │  BM25 Search   │
+           │   Semantic     │        │    Keyword     │
+           └───────┬────────┘        └───────┬────────┘
+                   │                         │
+                   │                         │
+                   └───────────┬─────────────┘
+                               ▼
+                    ┌────────────────────┐
+                    │  Hybrid Ranking    │
+                    │                    │
+                    │ Vector = 0.8       │
+                    │ BM25   = 0.2       │
+                    └──────────┬─────────┘
+                               │
+                               ▼
+                    ┌────────────────────┐
+                    │    Top-K Chunks    │
+                    └──────────┬─────────┘
+                               │
+                               ▼
+                    ┌────────────────────┐
+                    │      Context       │
+                    └──────────┬─────────┘
+                               │
+                               ▼
+                    ┌────────────────────┐
+                    │        LLM         │
+                    └──────────┬─────────┘
+                               │
+                               ▼
+                    ┌────────────────────┐
+                    │ Answer + Citations │
+                    └────────────────────┘
 
-    B --> D[Semantic Results]
-    C --> E[Keyword Results]
-
-    D --> F[Hybrid Ranking]
-    E --> F
-
-    F --> G[Vector Weight: 0.8<br/>BM25 Weight: 0.2]
-    G --> H[Top-K Chunks]
-    H --> I[Context]
-    I --> J[LLM]
-    J --> K[Answer + Citations]
+```text
 
 #### Hybrid Search Configuration
 
