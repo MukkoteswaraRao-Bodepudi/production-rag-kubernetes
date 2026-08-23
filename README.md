@@ -209,7 +209,7 @@ Hybrid Search combines semantic vector retrieval with BM25 lexical retrieval.
                     │ Answer + Citations │
                     └────────────────────┘
 
-```text
+```
 
 #### Hybrid Search Configuration
 
