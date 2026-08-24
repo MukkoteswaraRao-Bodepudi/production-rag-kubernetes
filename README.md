@@ -661,32 +661,6 @@ Determine whether the Cross-Encoder improves the ordering of relevant candidates
           ↓
       Reranked Candidates
 
-## 3. Generation Evaluation
-
-Determine whether the LLM produces an answer supported by the final retrieved context.
-
-    Reranked Context
-          ↓
-          LLM
-          ↓
-    Generated Answer
-          ↓
-     Grounding Check
-
-## 4. End-to-End Evaluation
-
-The complete system is evaluated using:
-
-    Retrieval Quality
-           +
-    Reranking Quality
-           +
-    Answer Correctness
-           +
-    Groundedness
-           +
-    Citation Relevance
-
 ---
 
 # Reproducibility
