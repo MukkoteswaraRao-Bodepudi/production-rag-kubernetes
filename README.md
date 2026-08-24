@@ -292,3 +292,449 @@ Measures how many of the retrieved top-5 results are relevant.
 
 Mean Reciprocal Rank measures the position of the first relevant result in the retrieved ranking.
 
+# Day 6 — RAG Reranking with Cross-Encoder
+
+## Overview
+
+Day 6 focuses on improving the retrieval quality of the RAG pipeline using Cross-Encoder reranking.
+
+The pipeline first retrieves candidate chunks using Vector Search + BM25 Hybrid Search. A Cross-Encoder then evaluates the query and each retrieved candidate together and assigns a relevance score. The candidates are reordered based on these scores before the most relevant chunks are passed to the LLM for answer generation.
+
+The retrieval pipeline was also revalidated after changing the document chunking configuration from 1000/200 to 700/100.
+
+---
+
+# Objectives
+
+- [x] Implement Cross-Encoder reranking
+- [x] Compare relevant and irrelevant candidate chunks
+- [x] Evaluate reranking on Kubernetes queries
+- [x] Integrate reranking into the RAG pipeline
+- [x] Generate answers using reranked context
+- [x] Verify generated answers against retrieved context
+- [x] Optimize document chunking
+- [x] Revalidate retrieval after rechunking
+- [x] Evaluate final answers for grounding and unsupported claims
+
+---
+
+# Cross-Encoder Reranking
+
+The current reranker uses:
+
+    from sentence_transformers import CrossEncoder
+
+    reranker = CrossEncoder(
+        "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    )
+
+The Cross-Encoder is applied after the initial retrieval stage.
+
+Unlike a bi-encoder, which independently encodes the query and documents, the Cross-Encoder evaluates the query and candidate document together and produces a relevance score.
+
+Conceptually:
+
+    Query + Candidate Chunk
+              ↓
+        Cross-Encoder
+              ↓
+        Relevance Score
+              ↓
+          Re-ranking
+
+The highest-scoring candidates are selected as the final context for the LLM.
+
+---
+
+# Reranking Architecture
+
+    User Query
+        ↓
+    ┌─────────────────────────────┐
+    │       Vector Search         │
+    └─────────────┬───────────────┘
+                  │
+                  ├──────────────┐
+                  │              │
+                  ↓              ↓
+          Semantic Results    BM25 Results
+                  │              │
+                  └──────┬───────┘
+                         ↓
+                  Hybrid Search
+                         ↓
+                  Candidate Chunks
+                         ↓
+                  Cross-Encoder
+                         ↓
+                    Re-ranking
+                         ↓
+                      Top-K = 5
+                         ↓
+                  Context Construction
+                         ↓
+                        LLM
+                         ↓
+                   Final Answer
+                         ↓
+                  Sources / Citations
+
+---
+
+# Why Reranking?
+
+Initial retrieval methods are optimized for efficiently finding potentially relevant documents.
+
+However, the initial top-K results may contain:
+
+- Highly relevant chunks
+- Partially relevant chunks
+- Chunks containing only keywords
+- Semantically related but less useful chunks
+- Duplicate or overlapping information
+
+The Cross-Encoder provides an additional relevance-ranking stage before the context is sent to the LLM.
+
+    Initial Retrieval
+           ↓
+    Broad Candidate Set
+           ↓
+       Cross-Encoder
+           ↓
+    More Relevant Ordering
+           ↓
+       Final Context
+           ↓
+           LLM
+
+---
+
+# Evaluation Queries
+
+The reranking pipeline was tested using Kubernetes-related queries.
+
+## Primary Queries
+
+1. What is a Kubernetes Deployment?
+2. What is a Kubernetes Pod?
+3. What is a Kubernetes Service?
+4. What is a ReplicaSet?
+5. What is a ConfigMap?
+
+## Additional Queries
+
+6. Deployment spec replicas desired state status
+7. Pod containers shared network storage node
+8. Service clusterIP selector endpoints Pods
+9. How does Kubernetes keep the required number of application instances running?
+10. How does Kubernetes provide stable access when Pod IP addresses change?
+11. How is a Deployment related to a ReplicaSet?
+12. How does a ReplicaSet maintain Pods?
+13. How can an application consume configuration without putting it inside the container image?
+14. What happens when a Pod managed by a Deployment fails?
+15. What is the difference between a Pod and a Deployment?
+
+These queries cover both direct concept questions and relationship/detail-oriented questions.
+
+---
+
+# Reranking Evaluation
+
+The reranking stage was evaluated by comparing the relevance of retrieved candidate chunks before and after Cross-Encoder scoring.
+
+The evaluation focuses on whether relevant chunks are promoted and less relevant chunks are moved down in the ranking.
+
+Example:
+
+    Query:
+    What is a Kubernetes Deployment?
+
+    Initial Candidates:
+
+    Chunk A → Deployment status
+    Chunk B → Pod definition
+    Chunk C → Deployment desired state
+    Chunk D → Service definition
+    Chunk E → ReplicaSet
+
+                 ↓
+           Cross-Encoder
+                 ↓
+
+    Reranked Candidates:
+
+    Chunk C → Deployment desired state
+    Chunk A → Deployment status
+    Chunk E → ReplicaSet
+    Chunk B → Pod definition
+    Chunk D → Service definition
+
+The reranked candidates are then used to construct the final LLM context.
+
+---
+
+# Document Rechunking
+
+Document chunking was also optimized during the retrieval experiments.
+
+## Previous Configuration
+
+    chunk_size = 1000
+    chunk_overlap = 200
+
+## Current Configuration
+
+    chunk_size = 700
+    chunk_overlap = 100
+
+The 700/100 configuration produces more focused chunks while maintaining overlap between neighboring chunks.
+
+After rechunking, the retrieval pipeline was revalidated using the Kubernetes evaluation queries.
+
+The purpose of this experiment was to determine whether more focused chunks improve the relevance of retrieved context and provide better evidence for downstream reranking and generation.
+
+---
+
+# Final RAG Response Verification
+
+Retrieval quality is not evaluated only through retrieval metrics.
+
+The final generated responses are also checked against the retrieved context.
+
+The evaluation includes:
+
+- Answer correctness
+- Retrieved-context support
+- Source correctness
+- Page-number correctness
+- Citation relevance
+- Unsupported claims
+- Context-to-answer alignment
+- Groundedness / faithfulness
+
+The objective is to ensure that the LLM does not introduce information that is unsupported by the retrieved documents.
+
+---
+
+# Example: Grounded Answer
+
+## Question
+
+    What is a Kubernetes Deployment?
+
+## Retrieved Context
+
+    A Deployment is an object that can represent an application
+    running on the cluster and specifies the desired number of replicas.
+
+## Generated Answer
+
+    A Kubernetes Deployment is a Kubernetes object that represents
+    an application running on the cluster and maintains the desired
+    number of application replicas.
+
+## Evaluation
+
+    Answer Correctness:           Supported
+    Context Support:              Yes
+    Unsupported Claims:           None identified
+    Context-to-Answer Alignment:  Good
+
+The generated answer is a concise paraphrase of the retrieved evidence.
+
+---
+
+# Grounding and Hallucination Check
+
+A key part of the evaluation is distinguishing between supported information and unsupported information.
+
+## Supported Information
+
+Information that is explicitly present in the retrieved context.
+
+    Retrieved Context:
+    A Deployment specifies the desired number of replicas.
+
+    Answer:
+    A Deployment specifies the desired number of replicas.
+
+    Result:
+    Supported
+
+## Unsupported Information
+
+Information that may be generally correct but is not supported by the retrieved context.
+
+    Retrieved Context:
+    A Deployment specifies the desired number of replicas.
+
+    Answer:
+    Deployments support rolling updates and automatic rollback.
+
+    Result:
+    Unsupported by the retrieved context
+
+For a strict RAG system, generally correct external knowledge should not automatically be treated as grounded evidence.
+
+---
+
+# Out-of-Context Query Handling
+
+The RAG system was also tested with questions for which the retrieved documents did not contain sufficient information.
+
+Example:
+
+    Question:
+    What is a ConfigMap?
+
+When the provided documents contain only references to ConfigMap but not an actual definition, the system should avoid inventing a definition.
+
+Expected behavior:
+
+    I don't have information based on the Provided Documents.
+
+This behavior is important for evaluating grounded generation and reducing unsupported responses.
+
+---
+
+# Current RAG Pipeline
+
+                    User Query
+                        ↓
+              ┌──────────────────┐
+              │  Vector Search   │
+              └────────┬─────────┘
+                       │
+                       +
+              ┌────────▼─────────┐
+              │    BM25 Search   │
+              └────────┬─────────┘
+                       │
+                       ↓
+                Hybrid Search
+                       ↓
+               Candidate Chunks
+                       ↓
+              Cross-Encoder
+                       ↓
+                  Re-ranking
+                       ↓
+                  Top-K = 5
+                       ↓
+             Context Construction
+                       ↓
+                      LLM
+                       ↓
+                Final Answer
+                       ↓
+              Sources / Citations
+
+---
+
+# Evaluation Methodology
+
+The same Kubernetes query set is used throughout the retrieval optimization process to maintain consistency between experiments.
+
+The evaluation is performed at multiple stages.
+
+## 1. Retrieval Evaluation
+
+Determine whether relevant chunks are retrieved in the initial candidate set.
+
+    Query
+      ↓
+    Vector + BM25
+      ↓
+    Top-K Candidates
+      ↓
+    Relevant Chunk Present?
+
+## 2. Reranking Evaluation
+
+Determine whether the Cross-Encoder improves the ordering of relevant candidates.
+
+    Candidate Chunks
+          ↓
+      Cross-Encoder
+          ↓
+      Relevance Scores
+          ↓
+      Reranked Candidates
+
+## 3. Generation Evaluation
+
+Determine whether the LLM produces an answer supported by the final retrieved context.
+
+    Reranked Context
+          ↓
+          LLM
+          ↓
+    Generated Answer
+          ↓
+     Grounding Check
+
+## 4. End-to-End Evaluation
+
+The complete system is evaluated using:
+
+    Retrieval Quality
+           +
+    Reranking Quality
+           +
+    Answer Correctness
+           +
+    Groundedness
+           +
+    Citation Relevance
+
+---
+
+# Reproducibility
+
+RAG experiments can produce different final responses between runs if retrieval candidates, ranking order, or LLM generation are not deterministic.
+
+Therefore, when comparing different RAG configurations, the following should remain unchanged whenever possible:
+
+- Evaluation queries
+- Source documents
+- Chunking configuration
+- Embedding model
+- Vector database
+- BM25 configuration
+- Initial retrieval top_k
+- Cross-Encoder model
+- Reranking top_k
+- LLM model
+- Prompt
+- Generation parameters
+
+Intermediate retrieval and reranking results should also be recorded.
+
+    Query
+      ↓
+    Retrieved Chunk IDs
+      ↓
+    Reranked Chunk IDs
+      ↓
+    Reranker Scores
+      ↓
+    Final Context
+      ↓
+    Generated Answer
+
+This makes it possible to identify whether a change originated from retrieval, reranking, or generation.
+
+---
+
+# Key Takeaways
+
+- Implemented Cross-Encoder reranking using cross-encoder/ms-marco-MiniLM-L-6-v2.
+- Integrated Cross-Encoder reranking after Hybrid Search.
+- Evaluated reranking using multiple Kubernetes queries.
+- Used the reranked Top-5 chunks as LLM context.
+- Added final answer verification against retrieved context.
+- Rechunked documents from 1000/200 to 700/100.
+- Revalidated retrieval after rechunking.
+- Added grounding and unsupported-claim checks.
+- Tested out-of-context questions to evaluate conservative RAG behavior.
+- Established a multi-stage evaluation approach covering retrieval, reranking, and generation.
