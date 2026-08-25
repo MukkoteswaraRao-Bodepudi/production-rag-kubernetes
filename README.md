@@ -712,3 +712,35 @@ This makes it possible to identify whether a change originated from retrieval, r
 - Added grounding and unsupported-claim checks.
 - Tested out-of-context questions to evaluate conservative RAG behavior.
 - Established a multi-stage evaluation approach covering retrieval, reranking, and generation.
+
+## Day 7 — Retrieval Evaluation 2: Cross-Encoder Reranking
+
+Day 7 focused on evaluating the impact of Cross-Encoder reranking on the existing Hybrid Search retrieval pipeline.
+
+The goal was to compare:
+
+1. Hybrid Search retrieval
+2. Hybrid Search + Cross-Encoder Reranking
+
+The reranker used was:
+
+`cross-encoder/ms-marco-MiniLM-L-6-v2`
+
+### Retrieval Evaluation Pipeline
+
+```text
+User Query
+    ↓
+Hybrid Search
+    ↓
+Candidate Chunks
+    ↓
+Cross-Encoder Reranker
+    ↓
+Top-5 Ranked Chunks
+    ↓
+Context Construction
+    ↓
+LLM
+    ↓
+Final Answer
