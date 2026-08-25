@@ -580,7 +580,7 @@ For a strict RAG system, generally correct external knowledge should not automat
 
 # Out-of-Context Query Handling
 
-The RAG system was also tested with questions for which the retrieved documents did not contain sufficient information.
+The RAG system was also tested with questions for which the retrieved documents did not contain sufficient information. 
 
 Example:
 
