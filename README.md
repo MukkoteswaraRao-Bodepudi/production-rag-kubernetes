@@ -744,6 +744,7 @@ Context Construction
 LLM
     ↓
 Final Answer
+```
 
 
 ### Day 8 — RAG Application
