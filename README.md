@@ -744,3 +744,68 @@ Context Construction
 LLM
     ↓
 Final Answer
+
+
+### Day 8 — RAG Application
+
+Day 8 focused on building the complete RAG application by connecting the retrieval, reranking, context construction, LLM generation, and source citation components into an end-to-end pipeline.
+
+#### Objectives
+
+- [x] Build the end-to-end RAG application
+- [x] Connect hybrid retrieval with the reranking stage
+- [x] Use the reranked top-K chunks as the final retrieval context
+- [x] Build context from retrieved documents
+- [x] Pass the constructed context to the LLM through a prompt
+- [x] Generate answers grounded in the Kubernetes documentation
+- [x] Add source metadata and page-level citations
+- [x] Test factual and conceptual Kubernetes queries
+- [x] Test multi-document questions
+- [x] Test relationship-based questions
+- [x] Verify generated responses against retrieved sources
+- [x] Configure LangSmith tracing for the RAG application
+
+#### RAG Application Architecture
+
+```text
+                         User Query
+                              │
+                              ▼
+                    ┌──────────────────┐
+                    │ Hybrid Retrieval │
+                    │ Vector + BM25    │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │   Reranker       │
+                    │ Cross-Encoder     │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │   Top-K Chunks   │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │ Context Builder  │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │     Prompt       │
+                    │ Query + Context  │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │       LLM        │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │ Final Response   │
+                    │ + Citations      │
+                    └──────────────────┘
+
