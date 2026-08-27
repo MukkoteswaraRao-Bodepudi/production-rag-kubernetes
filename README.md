@@ -810,3 +810,48 @@ Day 8 focused on building the complete RAG application by connecting the retriev
                     │ + Citations      │
                     └──────────────────┘
 
+```
+
+# Day 9 — RAG Optimization and Grounded Responses
+
+## Overview
+
+Day 9 focused on improving and testing the complete RAG application.
+
+We already had:
+
+- Hybrid Retrieval
+- Cross-Encoder Reranking
+
+In Day 9, we focused on what happens after reranking:
+
+- [x] Building the context
+- [x] Passing the context to the LLM
+- [x] Creating source-aware prompts
+- [x] Generating grounded answers
+- [x] Handling unsupported questions
+- [x] Checking source citations
+- [x] Testing the complete RAG pipeline
+
+The RAG application uses the Kubernetes documentation dataset containing approximately 12,694 chunks.
+
+---
+
+## RAG Pipeline
+
+```text
+User Query
+    ↓
+Hybrid Retrieval
+    ↓
+Cross-Encoder Reranking
+    ↓
+Top Relevant Chunks
+    ↓
+Context Building
+    ↓
+Source-Aware Prompt
+    ↓
+LLM
+    ↓
+Answer + Sources
