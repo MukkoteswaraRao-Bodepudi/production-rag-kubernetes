@@ -855,3 +855,140 @@ Source-Aware Prompt
 LLM
     ↓
 Answer + Sources
+
+```
+
+# Day 10 — Generation Evaluation & Query Optimization
+
+## Overview
+
+Today we tested the quality of our RAG answers and checked whether query optimization improves retrieval.
+
+Current pipeline:
+
+User Query → Hybrid Search → Reranking → LLM → Answer
+
+Knowledge Base: **12,694 Kubernetes documentation chunks**
+
+---
+
+## 1. Generation Evaluation
+
+We tested different types of questions.
+
+### Simple Questions
+- What is a Kubernetes Deployment?
+- What is a Kubernetes Pod?
+- What is a Kubernetes Service?
+- What is a ReplicaSet?
+
+### Complex Questions
+- How do Deployments, ReplicaSets, and Pods work together?
+- How does a Deployment perform a rolling update?
+- How does a Service discover Pods and route traffic?
+
+### Unsupported Questions
+- What is the capital of France?
+- How does a Python decorator work?
+- What is machine learning?
+- What is a SQL JOIN?
+
+The system correctly answered Kubernetes questions using the retrieved documents and rejected unsupported questions with:
+
+> I don't have information based on the provided documents.
+
+### Result
+
+The generated answers were already good enough.
+
+**Decision:**
+
+❌ No separate Generation Evaluation framework is required at this stage.
+
+---
+
+# 2. Query Optimization
+
+Query Optimization means rewriting the user's query before retrieval.
+
+Example:
+
+**Original Query:**
+
+> What is a Kubernetes Deployment?
+
+**Optimized Query:**
+
+> Kubernetes Deployment resource definition and purpose in Kubernetes cluster management.
+
+We compared retrieval using:
+
+### Original Query
+
+User Query → Retrieval → Reranking → LLM
+
+### Optimized Query
+
+User Query → Query Optimization → Retrieval → Reranking → LLM
+
+---
+
+## 3. Query Optimization Result
+
+We tested query optimization with:
+
+- Deployment
+- Pod
+- Service
+- ReplicaSet
+- Deployment updates
+- Service selectors
+
+The optimized queries changed the retrieved results in some cases, but they did **not consistently improve** retrieval or final answers.
+
+Query optimization also adds:
+
+- Extra LLM call
+- Extra token cost
+- Extra latency
+- Risk of changing the user's intent
+
+### Decision
+
+❌ Do not use Query Optimization in the main pipeline for now.
+
+---
+
+# 4. Multi-Query Retrieval
+
+We also considered Multi-Query Retrieval for complex questions.
+
+It can help when one question contains multiple concepts, but it also increases:
+
+- Token usage
+- Retrieval operations
+- Latency
+- System complexity
+
+### Decision
+
+🔍 Keep Multi-Query Retrieval as a **future optimization**, not part of the current pipeline.
+
+---
+
+# 5. Final Day 10 Pipeline
+
+```text
+User Query
+    ↓
+Hybrid Search
+    ↓
+Cross-Encoder Reranking
+    ↓
+Context
+    ↓
+LLM
+    ↓
+Answer + Sources
+
+```
