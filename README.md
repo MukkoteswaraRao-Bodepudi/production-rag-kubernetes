@@ -992,3 +992,76 @@ LLM
 Answer + Sources
 
 ```
+
+# Day 11 — FastAPI + Streamlit Integration
+
+## Overview
+
+Day 11 focused on converting the completed RAG pipeline into an application that can be accessed through an API and an interactive web interface.
+
+The existing RAG pipeline remains the core intelligence layer, while:
+
+- **FastAPI** provides the backend API.
+- **Streamlit** provides the frontend interface.
+
+The goal was to separate the RAG logic from the user interface and expose the system through a clean application architecture.
+
+---
+
+## Objectives
+
+- [x] Create FastAPI backend
+- [x] Expose the RAG pipeline through an API
+- [x] Create API request and response models
+- [x] Connect Streamlit with FastAPI
+- [x] Send user queries from Streamlit to FastAPI
+- [x] Generate answers using the existing RAG pipeline
+- [x] Display generated answers in Streamlit
+- [x] Display document sources
+- [x] Display page-level citations
+- [x] Handle API errors
+- [x] Add loading/search states
+- [x] Prevent duplicate query execution
+- [x] Test the complete frontend-to-backend workflow
+
+---
+
+## Day 11 Architecture
+
+```text
+                         User
+                          │
+                          ▼
+                 ┌─────────────────┐
+                 │   Streamlit UI  │
+                 └────────┬────────┘
+                          │
+                          │ HTTP Request
+                          ▼
+                 ┌─────────────────┐
+                 │     FastAPI     │
+                 │     Backend     │
+                 └────────┬────────┘
+                          │
+                          ▼
+                 ┌─────────────────┐
+                 │   RAG Pipeline  │
+                 │                 │
+                 │ Hybrid Search   │
+                 │       ↓         │
+                 │ Reranking       │
+                 │       ↓         │
+                 │ Context         │
+                 │       ↓         │
+                 │ LLM             │
+                 └────────┬────────┘
+                          │
+                          ▼
+                 ┌─────────────────┐
+                 │ Answer + Sources│
+                 └────────┬────────┘
+                          │
+                          ▼
+                 ┌─────────────────┐
+                 │   Streamlit UI  │
+                 └─────────────────┘
